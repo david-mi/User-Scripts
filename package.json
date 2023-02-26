@@ -1,0 +1,13 @@
+{
+  "name": "tampermonkey-scripts",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "start": "tsc --watch"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "typescript": "^4.9.5"
+  }
+}
