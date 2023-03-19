@@ -1,6 +1,6 @@
 "use strict";
 (function () {
-    console.log("9Gag_control_videos_v2.1 script loaded");
+    console.log("9Gag_control_videos_v2.2 script loaded");
     document.addEventListener("scroll", handleScroll);
     document.addEventListener("endscroll", handleVideos);
     const endScrollEvent = new Event("endscroll");
@@ -39,13 +39,13 @@
     async function handleVideos() {
         let videosElements = document.querySelectorAll("video");
         let tries = 0;
-        const MAX_TRIES = 5;
+        const MAX_TRIES = 10;
         while (videosElements.length === 0 && tries < MAX_TRIES) {
             videosElements = await new Promise((resolve) => {
                 setTimeout(() => {
                     tries += 1;
                     resolve(document.querySelectorAll("video"));
-                }, 100);
+                }, 500);
             });
         }
         for (const video of videosElements) {
