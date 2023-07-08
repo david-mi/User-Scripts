@@ -30,9 +30,6 @@
             return console.log("Le bouton d'envoi n'a pu être trouvé");
         }
         fullLinkRadioInput.click();
-
-        /** voir pourquoi j'ai besoin d'un timeout sur le click la première fois que je colle quelque chose */
-
         // await new Promise((resolve) => {
         //   setTimeout(() => {
         //     console.log("wait");
