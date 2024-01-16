@@ -1,6 +1,7 @@
 
 (async function handler() {
-  async function getMarkMovieAsWatchedButton() {
+  async function getMarkMovieAsWatchedParentElement() {
+    // await wait(100)
     const MAX_TRIES = 10
     let counter = 0
     let markMovieAsWatchedButton = null
@@ -15,41 +16,57 @@
       });
     }
 
-    return markMovieAsWatchedButton
+    if (markMovieAsWatchedButton === null) {
+      throw new Error("Mark movie as watched button not found !")
+    }
+
+    // child gets mutations in some cases so its better to refer on parent element
+    return markMovieAsWatchedButton.parentElement!
   }
 
-  class Helpers {
-    static getMovieId() {
-      const pageHref = location.href
-      const movieIdRegex = /\d+$/
-      const authCookieMatch = pageHref.match(movieIdRegex)
-      return authCookieMatch && authCookieMatch[0]
+  function getMovieId() {
+    const pageHref = location.href
+    const movieIdRegex = /\d+$/
+    const movieIdMatch = pageHref.match(movieIdRegex)
+
+    if (movieIdMatch === null) {
+      throw new Error("Movie id not found !")
     }
 
-    static async wait(time: number) {
-      return new Promise((resolve) => {
-        setTimeout(resolve, time)
-      })
-    }
-
-    static getAuthCookie() {
-      const cookie = document.cookie
-
-      const regex = /(?<=SC_AUTH=)[^\s]+/
-      const authCookieMatch = cookie.match(regex)
-      return authCookieMatch && authCookieMatch[0]
-    }
-
-    static checkIfCurrentPageIsAMoviePage() {
-      const moviePathRegex = /\/film\/.+\/\d+$/
-      return moviePathRegex.test(location.pathname)
-    }
+    return movieIdMatch[0]
   }
 
-  async function removeMovieFromWishList(movieId: string, authCookie: string) {
+  function getAuthCookie() {
+    const cookie = document.cookie
+    const cookieRegex = /(?<=SC_AUTH=)[^\s]+/
+    const authCookieMatch = cookie.match(cookieRegex)
+
+    if (authCookieMatch === null) {
+      throw new Error("Auth cookie not found !")
+    }
+
+    return authCookieMatch[0]
+  }
+
+  function hasChangedPage(previousPagePathname: string) {
+    return previousPagePathname !== location.pathname
+  }
+
+  function isOnAMoviePage() {
+    const moviePathRegex = /\/film\/.+\/\d+$/
+    return moviePathRegex.test(location.pathname)
+  }
+
+  async function wait(time: number) {
+    return new Promise((resolve) => {
+      setTimeout(resolve, time)
+    })
+  }
+
+  async function removeMovieFromWishList() {
     const body = `[{ 
       "operationName": "ProductUnwish", 
-      "variables": {"productId": ${movieId}}, 
+      "variables": {"productId": ${getMovieId()}}, 
       "query": "mutation ProductUnwish($productId: Int!) {\\n  productUnwish(productId: $productId)\\n}\\n" 
     }]`;
 
@@ -59,51 +76,42 @@
       credentials: "omit",
       headers: {
         "accept": "*/*",
-        "authorization": `${authCookie}`,
+        "authorization": getAuthCookie(),
         "content-type": "application/json",
         "sec-fetch-mode": "cors",
         "sec-fetch-site": "same-site",
       },
-      body: `${body}`,
+      body
     });
   }
 
   async function handleMarkMovieAsWatchedButtonClick() {
-    const authCookie = Helpers.getAuthCookie()
-    if (authCookie === null) {
-      return console.log("cookie d'authentification non trouvé")
-    }
-
-    const movieId = Helpers.getMovieId()
-    if (movieId === null) {
-      return console.log("L'id du film n'a pas été trouvé")
-    }
-
-    await Helpers.wait(200)
-    removeMovieFromWishList(movieId, authCookie)
+    const waitTimeInMs = 200
+    await wait(waitTimeInMs)
+    removeMovieFromWishList()
   }
 
-  const markMovieAsWatchedButton = await getMarkMovieAsWatchedButton()
+  try {
+    let markMovieAsWatchedButton = (await getMarkMovieAsWatchedParentElement()).firstElementChild!
+    markMovieAsWatchedButton.addEventListener("click", handleMarkMovieAsWatchedButtonClick)
 
-  if (markMovieAsWatchedButton === null) {
-    return console.log("Le bouton 'Vu' n'a pas été trouvé")
+    let previousPagePathname = location.pathname
+
+    const mutationObserver = new MutationObserver(async () => {
+      if (hasChangedPage(previousPagePathname)) {
+        previousPagePathname = location.pathname
+        markMovieAsWatchedButton.removeEventListener("click", handleMarkMovieAsWatchedButtonClick)
+
+        if (isOnAMoviePage()) {
+          markMovieAsWatchedButton = (await getMarkMovieAsWatchedParentElement()).firstElementChild!
+          console.log("movie page", markMovieAsWatchedButton)
+          markMovieAsWatchedButton.addEventListener("click", handleMarkMovieAsWatchedButtonClick)
+        }
+      }
+    })
+
+    mutationObserver.observe(document, { subtree: true, childList: true })
+  } catch (error) {
+    console.error({ sensCritiqueCustomScriptError: (error as Error).message })
   }
-
-  markMovieAsWatchedButton.addEventListener("click", handleMarkMovieAsWatchedButtonClick)
-
-  let previousPathname = location.pathname
-
-  const mutationObserver = new MutationObserver(() => {
-    if (previousPathname !== location.pathname) {
-      previousPathname = location.pathname
-      markMovieAsWatchedButton.removeEventListener("click", handleMarkMovieAsWatchedButtonClick)
-
-      if (Helpers.checkIfCurrentPageIsAMoviePage() === false) return
-
-      mutationObserver.disconnect()
-      handler()
-    }
-  })
-
-  mutationObserver.observe(document, { subtree: true, childList: true })
 })();
