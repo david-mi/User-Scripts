@@ -1,27 +1,30 @@
 
 (async function handler() {
-  async function getMarkMovieAsWatchedParentElement() {
-    // await wait(100)
+  function isDesktopResolution() {
+    return window.matchMedia("(min-width: 769px)").matches
+  }
+
+  async function getMarkMovieElement() {
     const MAX_TRIES = 10
     let counter = 0
-    let markMovieAsWatchedButton = null
+    let markMovieElement: HTMLDivElement | null = null
 
-    while (markMovieAsWatchedButton === null && counter <= MAX_TRIES) {
+    while (markMovieElement === null && counter <= MAX_TRIES) {
       counter++
-      markMovieAsWatchedButton = await new Promise<HTMLDivElement | null>((resolve) => {
+      markMovieElement = await new Promise<HTMLDivElement | null>((resolve) => {
         setTimeout(() => {
-          const actionButtons = document.querySelectorAll<HTMLDivElement>("[type='actionButton']")
-          resolve(actionButtons[1] || null);
+          const className = isDesktopResolution() ? "kebjjt" : "eOvOoF"
+          const markMoviePathIconElement = document.querySelector<SVGPathElement>(`div[type='actionButton'].${className} path[d='M3.67651 12.5L9.55887 18.3824L21.3236 6.61768']`)
+          resolve(markMoviePathIconElement && markMoviePathIconElement.closest<HTMLDivElement>("div[type='actionButton']"))
         }, 200);
       });
     }
 
-    if (markMovieAsWatchedButton === null) {
+    if (markMovieElement === null) {
       throw new Error("Mark movie as watched button not found !")
     }
 
-    // child gets mutations in some cases so its better to refer on parent element
-    return markMovieAsWatchedButton.parentElement!
+    return markMovieElement
   }
 
   function getMovieId() {
@@ -85,27 +88,33 @@
     });
   }
 
-  async function handleMarkMovieAsWatchedButtonClick() {
+  async function handleMarkMovieElementClick() {
     const waitTimeInMs = 200
     await wait(waitTimeInMs)
     removeMovieFromWishList()
   }
 
   try {
-    let markMovieAsWatchedButton = (await getMarkMovieAsWatchedParentElement()).firstElementChild!
-    markMovieAsWatchedButton.addEventListener("click", handleMarkMovieAsWatchedButtonClick)
+    let markMovieElement: HTMLDivElement | null = null
+    const matchMedia = window.matchMedia("(min-width: 769px)")
+    matchMedia.addEventListener("change", createMarkMovieElement)
+
+    async function createMarkMovieElement() {
+      markMovieElement?.removeEventListener("click", handleMarkMovieElementClick)
+      markMovieElement = await getMarkMovieElement()
+      markMovieElement.addEventListener("click", handleMarkMovieElementClick)
+    }
+    createMarkMovieElement()
 
     let previousPagePathname = location.pathname
 
     const mutationObserver = new MutationObserver(async () => {
       if (hasChangedPage(previousPagePathname)) {
         previousPagePathname = location.pathname
-        markMovieAsWatchedButton.removeEventListener("click", handleMarkMovieAsWatchedButtonClick)
+        markMovieElement?.removeEventListener("click", handleMarkMovieElementClick)
 
         if (isOnAMoviePage()) {
-          markMovieAsWatchedButton = (await getMarkMovieAsWatchedParentElement()).firstElementChild!
-          console.log("movie page", markMovieAsWatchedButton)
-          markMovieAsWatchedButton.addEventListener("click", handleMarkMovieAsWatchedButtonClick)
+          createMarkMovieElement()
         }
       }
     })
