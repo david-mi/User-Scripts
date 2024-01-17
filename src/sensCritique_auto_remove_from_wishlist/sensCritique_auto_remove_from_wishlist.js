@@ -1,5 +1,6 @@
 "use strict";
 (async function handler() {
+    console.log("Sens Critique - Auto Remove from Wishlist v1.0.0");
     const fetchCopy = window.fetch.bind(window);
     window.fetch = async function (input, init) {
         const body = init?.body;
@@ -8,7 +9,6 @@
         if (hasMarkedMovieAsSeen) {
             try {
                 const movieId = getMovieId(body);
-                console.log(movieId);
                 await removeMovieFromWishList(movieId);
             }
             catch (error) {
