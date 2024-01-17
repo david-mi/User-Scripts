@@ -44,7 +44,7 @@
         return previousPagePathname !== location.pathname;
     }
     function isOnAMoviePage() {
-        const moviePathRegex = /\/film\/.+\/\d+$/;
+        const moviePathRegex = /\/film\/[^\/]+\/\d+$/;
         return moviePathRegex.test(location.pathname);
     }
     async function wait(time) {

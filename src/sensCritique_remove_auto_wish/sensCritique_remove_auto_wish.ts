@@ -56,7 +56,7 @@
   }
 
   function isOnAMoviePage() {
-    const moviePathRegex = /\/film\/.+\/\d+$/
+    const moviePathRegex = /\/film\/[^\/]+\/\d+$/
     return moviePathRegex.test(location.pathname)
   }
 
