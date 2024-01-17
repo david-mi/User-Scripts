@@ -1,47 +1,35 @@
 
 (async function handler() {
-  function isDesktopResolution() {
-    return window.matchMedia("(min-width: 769px)").matches
-  }
+  const fetchCopy = window.fetch.bind(window);
 
-  async function getMarkMovieElement() {
-    const MAX_TRIES = 10
-    let counter = 0
-    let markMovieElement: HTMLDivElement | null = null
+  window.fetch = async function (input: RequestInfo | URL, init?: RequestInit | undefined) {
+    const body = init?.body as string | undefined
+    const response = await fetchCopy(input, init);
 
-    while (markMovieElement === null && counter <= MAX_TRIES) {
-      counter++
-      markMovieElement = await new Promise<HTMLDivElement | null>((resolve) => {
-        setTimeout(() => {
-          const className = isDesktopResolution() ? "kebjjt" : "eOvOoF"
-          const markMoviePathIconElement = document.querySelector<SVGPathElement>(`div[type='actionButton'].${className} path[d='M3.67651 12.5L9.55887 18.3824L21.3236 6.61768']`)
-          resolve(markMoviePathIconElement && markMoviePathIconElement.closest<HTMLDivElement>("div[type='actionButton']"))
-        }, 200);
-      });
+    const hasMarkedMovieAsSeen = body !== undefined && body.includes("productDone")
+    if (hasMarkedMovieAsSeen) {
+      try {
+        const movieId = getMovieId(body)
+        console.log(movieId)
+        await removeMovieFromWishList(movieId)
+      } catch (error) {
+        console.error({ sensCritiqueCustomScriptError: (error as Error).message })
+      }
     }
 
-    if (markMovieElement === null) {
-      throw new Error("Mark movie as watched button not found !")
-    }
+    return response
+  };
 
-    return markMovieElement
-  }
+  function getMovieId(requestBody: string) {
+    const movieIdRegex = /(?<="productId":)\d+/
+    const movieId = requestBody.match(movieIdRegex)![0]
 
-  function getMovieId() {
-    const pageHref = location.href
-    const movieIdRegex = /\d+$/
-    const movieIdMatch = pageHref.match(movieIdRegex)
-
-    if (movieIdMatch === null) {
-      throw new Error("Movie id not found !")
-    }
-
-    return movieIdMatch[0]
+    return movieId
   }
 
   function getAuthCookie() {
     const cookie = document.cookie
-    const cookieRegex = /(?<=SC_AUTH=)[^\s]+/
+    const cookieRegex = /(?<=SC_AUTH=)[^\s]+(?=;)/
     const authCookieMatch = cookie.match(cookieRegex)
 
     if (authCookieMatch === null) {
@@ -51,25 +39,10 @@
     return authCookieMatch[0]
   }
 
-  function hasChangedPage(previousPagePathname: string) {
-    return previousPagePathname !== location.pathname
-  }
-
-  function isOnAMoviePage() {
-    const moviePathRegex = /\/film\/[^\/]+\/\d+$/
-    return moviePathRegex.test(location.pathname)
-  }
-
-  async function wait(time: number) {
-    return new Promise((resolve) => {
-      setTimeout(resolve, time)
-    })
-  }
-
-  async function removeMovieFromWishList() {
+  async function removeMovieFromWishList(movieId: string) {
     const body = `[{ 
       "operationName": "ProductUnwish", 
-      "variables": {"productId": ${getMovieId()}}, 
+      "variables": {"productId": ${movieId}}, 
       "query": "mutation ProductUnwish($productId: Int!) {\\n  productUnwish(productId: $productId)\\n}\\n" 
     }]`;
 
@@ -86,41 +59,5 @@
       },
       body
     });
-  }
-
-  async function handleMarkMovieElementClick() {
-    const waitTimeInMs = 200
-    await wait(waitTimeInMs)
-    removeMovieFromWishList()
-  }
-
-  try {
-    let markMovieElement: HTMLDivElement | null = null
-    const matchMedia = window.matchMedia("(min-width: 769px)")
-    matchMedia.addEventListener("change", handleMarkMovieElement)
-
-    async function handleMarkMovieElement() {
-      markMovieElement?.removeEventListener("click", handleMarkMovieElementClick)
-      markMovieElement = await getMarkMovieElement()
-      markMovieElement.addEventListener("click", handleMarkMovieElementClick)
-    }
-    handleMarkMovieElement()
-
-    let previousPagePathname = location.pathname
-
-    const mutationObserver = new MutationObserver(async () => {
-      if (hasChangedPage(previousPagePathname)) {
-        previousPagePathname = location.pathname
-        markMovieElement?.removeEventListener("click", handleMarkMovieElementClick)
-
-        if (isOnAMoviePage()) {
-          handleMarkMovieElement()
-        }
-      }
-    })
-
-    mutationObserver.observe(document, { subtree: true, childList: true })
-  } catch (error) {
-    console.error({ sensCritiqueCustomScriptError: (error as Error).message })
   }
 })();
