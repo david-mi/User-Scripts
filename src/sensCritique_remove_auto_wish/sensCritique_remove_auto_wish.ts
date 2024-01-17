@@ -97,14 +97,14 @@
   try {
     let markMovieElement: HTMLDivElement | null = null
     const matchMedia = window.matchMedia("(min-width: 769px)")
-    matchMedia.addEventListener("change", createMarkMovieElement)
+    matchMedia.addEventListener("change", handleMarkMovieElement)
 
-    async function createMarkMovieElement() {
+    async function handleMarkMovieElement() {
       markMovieElement?.removeEventListener("click", handleMarkMovieElementClick)
       markMovieElement = await getMarkMovieElement()
       markMovieElement.addEventListener("click", handleMarkMovieElementClick)
     }
-    createMarkMovieElement()
+    handleMarkMovieElement()
 
     let previousPagePathname = location.pathname
 
@@ -114,7 +114,7 @@
         markMovieElement?.removeEventListener("click", handleMarkMovieElementClick)
 
         if (isOnAMoviePage()) {
-          createMarkMovieElement()
+          handleMarkMovieElement()
         }
       }
     })

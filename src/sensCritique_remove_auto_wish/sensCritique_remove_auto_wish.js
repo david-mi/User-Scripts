@@ -80,20 +80,20 @@
     try {
         let markMovieElement = null;
         const matchMedia = window.matchMedia("(min-width: 769px)");
-        matchMedia.addEventListener("change", createMarkMovieElement);
-        async function createMarkMovieElement() {
+        matchMedia.addEventListener("change", handleMarkMovieElement);
+        async function handleMarkMovieElement() {
             markMovieElement?.removeEventListener("click", handleMarkMovieElementClick);
             markMovieElement = await getMarkMovieElement();
             markMovieElement.addEventListener("click", handleMarkMovieElementClick);
         }
-        createMarkMovieElement();
+        handleMarkMovieElement();
         let previousPagePathname = location.pathname;
         const mutationObserver = new MutationObserver(async () => {
             if (hasChangedPage(previousPagePathname)) {
                 previousPagePathname = location.pathname;
                 markMovieElement?.removeEventListener("click", handleMarkMovieElementClick);
                 if (isOnAMoviePage()) {
-                    createMarkMovieElement();
+                    handleMarkMovieElement();
                 }
             }
         });
