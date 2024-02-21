@@ -4,7 +4,7 @@
         const MAX_TRIES = 10;
         let counter = 0;
         let linksTextArea = document.querySelector("#links");
-        while (linksTextArea === null && counter >= MAX_TRIES) {
+        while (linksTextArea === null && counter <= MAX_TRIES) {
             counter++;
             linksTextArea = await new Promise((resolve) => {
                 setTimeout(() => {

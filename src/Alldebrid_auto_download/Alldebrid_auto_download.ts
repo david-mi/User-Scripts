@@ -9,7 +9,7 @@
     let counter = 0
     let linksTextArea = document.querySelector<HTMLTextAreaElement>("#links");
 
-    while (linksTextArea === null && counter >= MAX_TRIES) {
+    while (linksTextArea === null && counter <= MAX_TRIES) {
       counter++
       linksTextArea = await new Promise((resolve) => {
         setTimeout(() => {
