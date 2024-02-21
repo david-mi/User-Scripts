@@ -7,37 +7,45 @@
     function displayConsoleColoredMessage(message, color) {
         return console.info(`%c${scriptName} :%c ${message}`, `color: ${color}; font-weight:bold;`, "color: ''");
     }
+    function removeElements(elements) {
+        elements.forEach(element => element.remove());
+    }
+    function getCommentsElementsByAuthor(commentsContainer, author) {
+        return commentsContainer.querySelectorAll(`shreddit-comment[author="${author}"]`);
+    }
+    function convertStringToHTMLElement(stringHtml) {
+        const documentElement = new DOMParser().parseFromString(stringHtml, "text/html");
+        return documentElement.firstElementChild;
+    }
+    function cloneResponseWithDifferentBody(reponse, body) {
+        return new Response(body, {
+            status: reponse.status,
+            statusText: reponse.statusText,
+            headers: reponse.headers
+        });
+    }
+    const fetchClone = window.fetch.bind(window);
+    window.fetch = async function (url, options) {
+        const isFetchingPageWithComments = typeof url === "string" && /comments\/.+?\/t3.+/.test(url);
+        if (isFetchingPageWithComments) {
+            try {
+                const response = await fetchClone(url, options);
+                const textHtml = await response.text();
+                const htmlElement = convertStringToHTMLElement(textHtml);
+                const autoModeratorCommentsElements = getCommentsElementsByAuthor(htmlElement, "AutoModerator");
+                removeElements(autoModeratorCommentsElements);
+                if (autoModeratorCommentsElements.length > 0) {
+                    displayConsoleColoredMessage(`
+            ${autoModeratorCommentsElements.length} AutoModerator 
+            comment${autoModeratorCommentsElements.length > 1 ? "s" : ""} hidden`, "#db8d45");
+                }
+                return cloneResponseWithDifferentBody(response, htmlElement.outerHTML);
+            }
+            catch (err) {
+                console.error(err);
+            }
+        }
+        return fetchClone(url, options);
+    };
     displayConsoleColoredMessage(`Script loaded (v${scriptVersion})`, "#db8d45");
-    async function getAutoModeratorPostElements() {
-        const MAX_TRIES = 10;
-        let counter = 0;
-        let autoModeratorPostElements = document.querySelectorAll("shreddit-comment[author='AutoModerator']");
-        while (autoModeratorPostElements.length === 0 && counter <= MAX_TRIES) {
-            counter++;
-            autoModeratorPostElements = await new Promise((resolve) => {
-                setTimeout(() => {
-                    resolve(document.querySelectorAll("shreddit-comment[author='AutoModerator']"));
-                }, 200);
-            });
-        }
-        return autoModeratorPostElements.length > 0
-            ? Array.from(autoModeratorPostElements)
-            : Promise.reject();
-    }
-    async function hideAutoModeratorPostElements() {
-        try {
-            const autoModeratorPostElements = await getAutoModeratorPostElements();
-            autoModeratorPostElements.forEach((autoModeratorPostElement) => autoModeratorPostElement.remove());
-            displayConsoleColoredMessage(`${autoModeratorPostElements.length} AutoModerator post(s) removed`, "#db8d45");
-        }
-        catch (error) {
-            displayConsoleColoredMessage("No AutoModerator post found", "#db8d45");
-        }
-    }
-    hideAutoModeratorPostElements();
-    function handleRouteChange() {
-        window.removeEventListener("popstate", handleRouteChange);
-        init();
-    }
-    window.addEventListener("popstate", handleRouteChange);
 })();
