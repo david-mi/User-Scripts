@@ -1,6 +1,12 @@
 "use strict";
 (async function handler() {
-    console.log("Sens Critique - Auto Remove from Wishlist v1.0.0");
+    //@ts-ignore
+    const scriptName = GM_info.script.name;
+    //@ts-ignore
+    const scriptVersion = GM_info.script.version;
+    function displayConsoleColoredMessage(message, color) {
+        return console.info(`%c${scriptName} :%c ${message}`, `color: ${color}; font-weight:bold;`, "color: ''");
+    }
     const fetchCopy = window.fetch.bind(window);
     window.fetch = async function (input, init) {
         const body = init?.body;
@@ -24,7 +30,7 @@
     }
     function getAuthCookie() {
         const cookie = document.cookie;
-        const cookieRegex = /(?<=SC_AUTH=)[^\s]+(?=;)/;
+        const cookieRegex = /(?<=SC_AUTH=)[^\s;]+/;
         const authCookieMatch = cookie.match(cookieRegex);
         if (authCookieMatch === null) {
             throw new Error("Auth cookie not found !");
@@ -51,4 +57,5 @@
             body
         });
     }
+    displayConsoleColoredMessage(`Script loaded (v${scriptVersion})`, "#db8d45");
 })();
