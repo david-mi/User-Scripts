@@ -9,4 +9,4 @@
 | [Sens Critique - Auto Remove from Wishlist v1.0.0](./src/sensCritique_auto_remove_from_wishlist/) | Prevents items from persisting in our wishlist after being marked as seen/read |
 | [Reddit - Hide AutoModerator comments v2.0.0](./src/Reddit_hide_AutoModerator_posts/) | Hide AutoModerator comments on reddit comments |
 | [Google Search - Keyboard Navigation v1.0.0](./src/google_search_keyboard_navigation/) | Make keyboard navigation easier on google search results |
-| [Open Food Facts - Quantity Calc v1.0.0](./src/) | Make keyboard navigation easier on google search results |
+| [Open Food Facts - Quantity Calc v1.0.0](./src/openFoodFacts_NutriCalc/) | Calculate custom values from nutrients table |
