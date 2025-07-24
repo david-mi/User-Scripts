@@ -2,8 +2,10 @@
   "name": "tampermonkey-scripts",
   "version": "1.0.0",
   "description": "",
+  "type": "module",
   "scripts": {
-    "start": "tsc --watch"
+    "start": "tsc --watch",
+    "create-template": "node create_template.js"
   },
   "author": "",
   "license": "ISC",
