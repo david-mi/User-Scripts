@@ -9,13 +9,16 @@
     }
     const currentSearchQuery = new URL(location.href).searchParams.get("q");
     const mapsSearchUrl = `/maps/search/${currentSearchQuery}`;
-    const mapsButtonTitleElement = document.createElement("div");
-    mapsButtonTitleElement.classList.add("YmvwI");
+    const mapsButtonTitleElement = document.createElement("span");
+    mapsButtonTitleElement.classList.add("R1QWuf");
     mapsButtonTitleElement.innerText = "Maps";
+    const mapsButtonTitleWrapper = document.createElement("div");
+    mapsButtonTitleWrapper.classList.add("mXwfNd");
+    mapsButtonTitleWrapper.append(mapsButtonTitleElement);
     const mapsLinkElement = document.createElement("a");
     mapsLinkElement.href = mapsSearchUrl;
-    mapsLinkElement.classList.add("nPDzT", "T3FoJb");
-    mapsLinkElement.append(mapsButtonTitleElement);
+    mapsLinkElement.classList.add("C6AK7c");
+    mapsLinkElement.append(mapsButtonTitleWrapper);
     const mapsButtonWrapper = document.createElement("div");
     mapsButtonWrapper.setAttribute("role", "listitem");
     mapsButtonWrapper.append(mapsLinkElement);
