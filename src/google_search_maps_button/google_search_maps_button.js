@@ -19,7 +19,7 @@
     const mapsButtonWrapper = document.createElement("div");
     mapsButtonWrapper.setAttribute("role", "listitem");
     mapsButtonWrapper.append(mapsLinkElement);
-    const googleButtonsContainer = document.querySelector(".crJ18e [role='list']");
+    const googleButtonsContainer = document.querySelector("[role='list']");
     googleButtonsContainer.insertBefore(mapsButtonWrapper, googleButtonsContainer.children[1]);
     displayConsoleColoredMessage(`Script loaded (v${scriptVersion})`, "#db8d45");
 })();
